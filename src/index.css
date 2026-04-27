@@ -1,29 +1,54 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   --font-display: "Playfair Display", serif;
   --font-sans: "Inter", sans-serif;
-  
   --animate-fade-in: fadeIn 1.5s ease-out forwards;
   
-  @keyframes fadeIn {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
+  font-family: var(--font-sans);
 }
 
-:root {
-  font-family: 'Inter', system-ui, sans-serif;
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #fdfaf6;
-  color: #1a1a1a;
+  background-color: #1a1714;
+  color: #fdfaf6;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   width: 100%;
 }
+
+/* --- ESTILOS PRINCIPALES --- */
+
+@layer utilities {
+  .section-container {
+    width: 100%;
+    max-width: 80rem; /* 1280px (7xl) */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .main-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    line-height: 1.1;
+    color: #fdfaf6;
+  }
+
+  .secondary-text {
+    font-size: 0.875rem;
+    color: #a8a29e; /* stone-400 */
+    line-height: 1.6;
+  }
+}
+
