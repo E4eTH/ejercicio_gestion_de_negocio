@@ -6,8 +6,9 @@ import {
   getCategories, addCategory, deleteCategory,
   getConfig, updateConfig,
 } from '../../firebase/firestore';
+import { uploadImage } from '../../firebase/cloudinary';
 
-const EMPTY_PLATE = { name: '', description: '', price: '', category: '', available: true };
+const EMPTY_PLATE = { name: '', description: '', price: '', category: '', available: true, imageUrl: '' };
 const EMPTY_CONFIG = { name: '', subtitle: '', hours: '', address: '' };
 
 const DashboardPage = () => {
@@ -24,6 +25,10 @@ const DashboardPage = () => {
   const [configForm, setConfigForm] = useState(EMPTY_CONFIG);
   const [configSaved, setConfigSaved] = useState(false);
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   useEffect(() => {
     const unsubPlates = getPlates(setPlates);
     const unsubCats = getCategories(setCategories);
@@ -33,6 +38,13 @@ const DashboardPage = () => {
     return () => { unsubPlates(); unsubCats(); unsubConfig(); };
   }, []);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file)); // Preview local instantáneo
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -41,24 +53,44 @@ const DashboardPage = () => {
   // ── Platos ──────────────────────────────────────────
   const handlePlateSubmit = async (e) => {
     e.preventDefault();
-    const data = { ...plateForm, price: Number(plateForm.price) };
+    setUploadingImage(true);
+
     try {
+      let imageUrl = plateForm.imageUrl; // Mantiene la imagen si no cambió al editar
+
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
+      const data = {
+        ...plateForm,
+        price: Number(plateForm.price),
+        imageUrl,
+      };
+
       if (editingPlate) {
         await updatePlate(editingPlate.id, data);
         setEditingPlate(null);
       } else {
         await addPlate(data);
       }
+
       setPlateForm(EMPTY_PLATE);
+      setImageFile(null);
+      setImagePreview('');
     } catch (err) {
       console.error(err);
       alert("Error al guardar plato: " + err.message);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
   const handleEdit = (plate) => {
     setEditingPlate(plate);
     setPlateForm({ ...plate, price: String(plate.price) });
+    setImagePreview(plate.imageUrl || '');
+    setImageFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -148,14 +180,41 @@ const DashboardPage = () => {
               <textarea className={`${input} resize-none`} rows={2} placeholder="Descripción breve del plato..."
                 value={plateForm.description} onChange={e => setPlateForm({ ...plateForm, description: e.target.value })} />
             </div>
+
+            <div className="sm:col-span-2">
+              <label className={label}>Foto del plato</label>
+              <div className="flex gap-4 items-start">
+
+                {/* Preview */}
+                <div className="w-28 h-28 rounded-xl bg-[#1a1714] border border-amber-900/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {imagePreview
+                    ? <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                    : <span className="text-stone-700 text-xs text-center px-2">Sin imagen</span>
+                  }
+                </div>
+
+                {/* Input */}
+                <div className="flex-1 flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="text-sm text-stone-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:uppercase file:tracking-widest file:bg-amber-800 file:text-amber-50 hover:file:bg-amber-700 file:cursor-pointer file:transition-colors"
+                  />
+                  <p className="text-xs text-stone-600">JPG, PNG o WebP. Se sube al guardar.</p>
+                </div>
+
+              </div>
+            </div>
             <div>
               <label className={label}>Precio ($ UY)</label>
               <input className={input} type="number" placeholder="0" required
                 value={plateForm.price} onChange={e => setPlateForm({ ...plateForm, price: e.target.value })} />
             </div>
             <div className="flex items-end gap-3">
-              <button type="submit" className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50 flex-1`}>
-                {editingPlate ? 'Guardar cambios' : 'Añadir plato'}
+              <button type="submit" disabled={uploadingImage}
+                className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50 flex-1 disabled:opacity-50`}>
+                {uploadingImage ? 'Subiendo imagen...' : editingPlate ? 'Guardar cambios' : 'Añadir plato'}
               </button>
               {editingPlate && (
                 <button type="button" onClick={() => { setEditingPlate(null); setPlateForm(EMPTY_PLATE); }}
