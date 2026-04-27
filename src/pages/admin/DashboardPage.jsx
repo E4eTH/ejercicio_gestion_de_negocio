@@ -62,9 +62,16 @@ const DashboardPage = () => {
         imageUrl = await uploadImage(imageFile);
       }
 
+      const price = Number(plateForm.price);
+      if (price < 0) {
+        alert("El precio no puede ser negativo");
+        setUploadingImage(false);
+        return;
+      }
+
       const data = {
         ...plateForm,
-        price: Number(plateForm.price),
+        price,
         imageUrl,
       };
 
@@ -208,7 +215,7 @@ const DashboardPage = () => {
             </div>
             <div>
               <label className={label}>Precio ($ UY)</label>
-              <input className={input} type="number" placeholder="0" required
+              <input className={input} type="number" placeholder="0" required min="0"
                 value={plateForm.price} onChange={e => setPlateForm({ ...plateForm, price: e.target.value })} />
             </div>
             <div className="flex items-end gap-3">
