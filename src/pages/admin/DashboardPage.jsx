@@ -1,10 +1,279 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import {
+  getPlates, addPlate, updatePlate, deletePlate,
+  getCategories, addCategory, deleteCategory,
+  getConfig, updateConfig,
+} from '../../firebase/firestore';
+
+const EMPTY_PLATE = { name: '', description: '', price: '', category: '', available: true };
+const EMPTY_CONFIG = { name: '', subtitle: '', hours: '', address: '' };
 
 const DashboardPage = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const [plates, setPlates] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [config, setConfig] = useState(EMPTY_CONFIG);
+
+  const [plateForm, setPlateForm] = useState(EMPTY_PLATE);
+  const [editingPlate, setEditingPlate] = useState(null);
+  const [newCategory, setNewCategory] = useState('');
+  const [configForm, setConfigForm] = useState(EMPTY_CONFIG);
+  const [configSaved, setConfigSaved] = useState(false);
+
+  useEffect(() => {
+    const unsubPlates = getPlates(setPlates);
+    const unsubCats = getCategories(setCategories);
+    const unsubConfig = getConfig((data) => {
+      if (data) { setConfig(data); setConfigForm(data); }
+    });
+    return () => { unsubPlates(); unsubCats(); unsubConfig(); };
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  // ── Platos ──────────────────────────────────────────
+  const handlePlateSubmit = async (e) => {
+    e.preventDefault();
+    const data = { ...plateForm, price: Number(plateForm.price) };
+    try {
+      if (editingPlate) {
+        await updatePlate(editingPlate.id, data);
+        setEditingPlate(null);
+      } else {
+        await addPlate(data);
+      }
+      setPlateForm(EMPTY_PLATE);
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar plato: " + err.message);
+    }
+  };
+
+  const handleEdit = (plate) => {
+    setEditingPlate(plate);
+    setPlateForm({ ...plate, price: String(plate.price) });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('¿Eliminar este plato?')) await deletePlate(id);
+  };
+
+  const handleToggle = (plate) =>
+    updatePlate(plate.id, { available: !plate.available });
+
+  // ── Categorías ───────────────────────────────────────
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategory.trim()) return;
+    try {
+      await addCategory({ name: newCategory.trim() });
+      setNewCategory('');
+    } catch (err) {
+      console.error(err);
+      alert("Error al añadir categoría: " + err.message);
+    }
+  };
+
+  // ── Config ───────────────────────────────────────────
+  const handleConfigSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateConfig(configForm);
+      setConfigSaved(true);
+      setTimeout(() => setConfigSaved(false), 2500);
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar configuración: " + err.message);
+    }
+  };
+
+  // ── Estilos reutilizables ─────────────────────────────
+  const input = "w-full bg-[#1a1714] border border-amber-900/30 rounded-xl px-4 py-2.5 text-sm text-[#fdfaf6] placeholder:text-stone-600 focus:outline-none focus:border-amber-700 transition-colors";
+  const label = "text-xs uppercase tracking-widest text-stone-500 mb-1 block";
+  const btn = "px-4 py-2 rounded-xl text-xs uppercase tracking-widest transition-colors duration-200";
+
   return (
-    <div className="p-8 text-[#1c1c1c]">
-      <h1 className="text-3xl font-display italic">Dashboard Admin</h1>
-      <p className="mt-4">Bienvenido al panel de gestión.</p>
+    <div className="min-h-screen bg-[#1a1714] text-[#fdfaf6] px-4 py-10 selection:bg-amber-100 selection:text-amber-900">
+      <div className="max-w-4xl mx-auto space-y-16">
+
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-amber-700 mb-1">Panel de gestión</p>
+            <h1 className="font-display italic text-4xl text-[#fdfaf6]">La Terraza</h1>
+            <p className="text-stone-500 text-sm mt-1">{user?.email}</p>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => navigate('/')} className={`${btn} border border-amber-900/40 text-stone-400 hover:text-amber-500 hover:border-amber-700`}>
+              Ver carta
+            </button>
+            <button onClick={handleLogout} className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50`}>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full h-px bg-amber-900/30" />
+
+        {/* ── Sección: Platos ── */}
+        <section className="space-y-6">
+          <h2 className="font-display italic text-2xl text-amber-100">
+            {editingPlate ? 'Editando plato' : 'Añadir plato'}
+          </h2>
+
+          <form onSubmit={handlePlateSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={label}>Nombre</label>
+              <input className={input} placeholder="Ej: Dorada a la sal" required
+                value={plateForm.name} onChange={e => setPlateForm({ ...plateForm, name: e.target.value })} />
+            </div>
+            <div>
+              <label className={label}>Categoría</label>
+              <select className={input} required
+                value={plateForm.category} onChange={e => setPlateForm({ ...plateForm, category: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={label}>Descripción</label>
+              <textarea className={`${input} resize-none`} rows={2} placeholder="Descripción breve del plato..."
+                value={plateForm.description} onChange={e => setPlateForm({ ...plateForm, description: e.target.value })} />
+            </div>
+            <div>
+              <label className={label}>Precio ($ UY)</label>
+              <input className={input} type="number" placeholder="0" required
+                value={plateForm.price} onChange={e => setPlateForm({ ...plateForm, price: e.target.value })} />
+            </div>
+            <div className="flex items-end gap-3">
+              <button type="submit" className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50 flex-1`}>
+                {editingPlate ? 'Guardar cambios' : 'Añadir plato'}
+              </button>
+              {editingPlate && (
+                <button type="button" onClick={() => { setEditingPlate(null); setPlateForm(EMPTY_PLATE); }}
+                  className={`${btn} border border-amber-900/40 text-stone-400 hover:text-amber-500`}>
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </form>
+
+          {/* Tabla de platos */}
+          <div className="rounded-2xl border border-amber-900/20 overflow-hidden">
+            {plates.length === 0 ? (
+              <p className="text-stone-600 text-sm p-6">No hay platos aún.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-[#2a2420] text-stone-500 text-xs uppercase tracking-widest">
+                  <tr>
+                    <th className="text-left px-5 py-3">Plato</th>
+                    <th className="text-left px-5 py-3 hidden sm:table-cell">Categoría</th>
+                    <th className="text-left px-5 py-3">Precio</th>
+                    <th className="text-left px-5 py-3">Estado</th>
+                    <th className="text-left px-5 py-3">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {plates.map((plate, i) => (
+                    <tr key={plate.id} className={`border-t border-amber-900/10 ${i % 2 === 0 ? 'bg-[#1e1b18]' : 'bg-[#1a1714]'}`}>
+                      <td className="px-5 py-3 font-display italic text-[#fdfaf6]">{plate.name}</td>
+                      <td className="px-5 py-3 text-stone-500 hidden sm:table-cell">{plate.category}</td>
+                      <td className="px-5 py-3 text-amber-700">$ {plate.price?.toLocaleString('es-UY')}</td>
+                      <td className="px-5 py-3">
+                        <button onClick={() => handleToggle(plate)}
+                          className={`text-xs px-3 py-1 rounded-full border transition-colors ${plate.available
+                            ? 'border-green-800/50 text-green-600 hover:bg-green-900/20'
+                            : 'border-amber-800/50 text-amber-700 bg-amber-900/20'}`}>
+                          {plate.available ? 'Disponible' : 'No disponible'}
+                        </button>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex gap-2">
+                          <button onClick={() => handleEdit(plate)}
+                            className="text-xs text-stone-400 hover:text-amber-500 transition-colors">Editar</button>
+                          <button onClick={() => handleDelete(plate.id)}
+                            className="text-xs text-stone-400 hover:text-red-500 transition-colors">Borrar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
+        <div className="w-full h-px bg-amber-900/30" />
+
+        {/* ── Sección: Categorías ── */}
+        <section className="space-y-6">
+          <h2 className="font-display italic text-2xl text-amber-100">Categorías</h2>
+
+          <form onSubmit={handleAddCategory} className="flex gap-3">
+            <input className={`${input} flex-1`} placeholder="Nueva categoría..."
+              value={newCategory} onChange={e => setNewCategory(e.target.value)} />
+            <button type="submit" className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50`}>
+              Añadir
+            </button>
+          </form>
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <div key={cat.id} className="flex items-center gap-2 px-4 py-2 rounded-full border border-amber-900/30 text-sm text-stone-300">
+                {cat.name}
+                <button onClick={() => deleteCategory(cat.id)}
+                  className="text-stone-600 hover:text-red-500 transition-colors text-xs ml-1">✕</button>
+              </div>
+            ))}
+            {categories.length === 0 && <p className="text-stone-600 text-sm">No hay categorías aún.</p>}
+          </div>
+        </section>
+
+        <div className="w-full h-px bg-amber-900/30" />
+
+        {/* ── Sección: Config del restaurante ── */}
+        <section className="space-y-6 pb-16">
+          <h2 className="font-display italic text-2xl text-amber-100">Información del restaurante</h2>
+
+          <form onSubmit={handleConfigSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={label}>Nombre</label>
+              <input className={input} placeholder="La Terraza"
+                value={configForm.name || ''} onChange={e => setConfigForm({ ...configForm, name: e.target.value })} />
+            </div>
+            <div>
+              <label className={label}>Subtítulo</label>
+              <input className={input} placeholder="Cocina Mediterránea"
+                value={configForm.subtitle || ''} onChange={e => setConfigForm({ ...configForm, subtitle: e.target.value })} />
+            </div>
+            <div>
+              <label className={label}>Dirección</label>
+              <input className={input} placeholder="Calle del Mar 14"
+                value={configForm.address || ''} onChange={e => setConfigForm({ ...configForm, address: e.target.value })} />
+            </div>
+            <div>
+              <label className={label}>Horario</label>
+              <input className={input} placeholder="13:00 – 23:30"
+                value={configForm.hours || ''} onChange={e => setConfigForm({ ...configForm, hours: e.target.value })} />
+            </div>
+            <div className="sm:col-span-2 flex items-center gap-4">
+              <button type="submit" className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50`}>
+                Guardar cambios
+              </button>
+              {configSaved && <span className="text-xs text-green-500 uppercase tracking-widest">¡Guardado!</span>}
+            </div>
+          </form>
+        </section>
+
+      </div>
     </div>
   );
 };
