@@ -105,17 +105,17 @@ const DashboardPage = () => {
       <div className="max-w-4xl mx-auto space-y-16">
 
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:gap-0">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-amber-700 mb-1">Panel de gestión</p>
             <h1 className="font-display italic text-4xl text-[#fdfaf6]">La Terraza</h1>
             <p className="text-stone-500 text-sm mt-1">{user?.email}</p>
           </div>
-          <div className="flex gap-3">
-            <button onClick={() => navigate('/')} className={`${btn} border border-amber-900/40 text-stone-400 hover:text-amber-500 hover:border-amber-700`}>
+          <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+            <button onClick={() => navigate('/')} className={`${btn} border border-amber-900/40 text-stone-400 hover:text-amber-500 hover:border-amber-700 flex-1 sm:flex-none text-center`}>
               Ver carta
             </button>
-            <button onClick={handleLogout} className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50`}>
+            <button onClick={handleLogout} className={`${btn} bg-amber-800 hover:bg-amber-700 text-amber-50 flex-1 sm:flex-none text-center`}>
               Cerrar sesión
             </button>
           </div>
@@ -167,40 +167,43 @@ const DashboardPage = () => {
           </form>
 
           {/* Tabla de platos */}
-          <div className="rounded-2xl border border-amber-900/20 overflow-hidden">
+          <div className="rounded-2xl border border-amber-900/20 overflow-x-auto">
             {plates.length === 0 ? (
               <p className="text-stone-600 text-sm p-6">No hay platos aún.</p>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[600px] sm:min-w-0">
                 <thead className="bg-[#2a2420] text-stone-500 text-xs uppercase tracking-widest">
                   <tr>
                     <th className="text-left px-5 py-3">Plato</th>
-                    <th className="text-left px-5 py-3 hidden sm:table-cell">Categoría</th>
+                    <th className="text-left px-5 py-3 hidden md:table-cell">Categoría</th>
                     <th className="text-left px-5 py-3">Precio</th>
                     <th className="text-left px-5 py-3">Estado</th>
-                    <th className="text-left px-5 py-3">Acciones</th>
+                    <th className="text-left px-5 py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {plates.map((plate, i) => (
                     <tr key={plate.id} className={`border-t border-amber-900/10 ${i % 2 === 0 ? 'bg-[#1e1b18]' : 'bg-[#1a1714]'}`}>
-                      <td className="px-5 py-3 font-display italic text-[#fdfaf6]">{plate.name}</td>
-                      <td className="px-5 py-3 text-stone-500 hidden sm:table-cell">{plate.category}</td>
-                      <td className="px-5 py-3 text-amber-700">$ {plate.price?.toLocaleString('es-UY')}</td>
+                      <td className="px-5 py-3">
+                        <div className="font-display italic text-[#fdfaf6]">{plate.name}</div>
+                        <div className="text-[10px] text-stone-600 uppercase tracking-widest md:hidden">{plate.category}</div>
+                      </td>
+                      <td className="px-5 py-3 text-stone-500 hidden md:table-cell">{plate.category}</td>
+                      <td className="px-5 py-3 text-amber-700 font-medium">$ {plate.price?.toLocaleString('es-UY')}</td>
                       <td className="px-5 py-3">
                         <button onClick={() => handleToggle(plate)}
-                          className={`text-xs px-3 py-1 rounded-full border transition-colors ${plate.available
+                          className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border transition-colors ${plate.available
                             ? 'border-green-800/50 text-green-600 hover:bg-green-900/20'
                             : 'border-amber-800/50 text-amber-700 bg-amber-900/20'}`}>
-                          {plate.available ? 'Disponible' : 'No disponible'}
+                          {plate.available ? 'Activo' : 'Pausado'}
                         </button>
                       </td>
-                      <td className="px-5 py-3">
-                        <div className="flex gap-2">
+                      <td className="px-5 py-3 text-right">
+                        <div className="flex gap-3 justify-end">
                           <button onClick={() => handleEdit(plate)}
-                            className="text-xs text-stone-400 hover:text-amber-500 transition-colors">Editar</button>
+                            className="text-xs text-stone-400 hover:text-amber-500 transition-colors uppercase tracking-tighter">Editar</button>
                           <button onClick={() => handleDelete(plate.id)}
-                            className="text-xs text-stone-400 hover:text-red-500 transition-colors">Borrar</button>
+                            className="text-xs text-stone-400 hover:text-red-500 transition-colors uppercase tracking-tighter">Borrar</button>
                         </div>
                       </td>
                     </tr>
