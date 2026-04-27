@@ -97,7 +97,7 @@ const DashboardPage = () => {
 
   // ── Estilos reutilizables ─────────────────────────────
   const input = "w-full bg-[#1a1714] border border-amber-900/30 rounded-xl px-4 py-2.5 text-sm text-[#fdfaf6] placeholder:text-stone-600 focus:outline-none focus:border-amber-700 transition-colors";
-  const label = "text-xs uppercase tracking-widest text-stone-500 mb-1 block";
+  const label = "text-xs uppercase tracking-widest text-stone-400 mb-1 block";
   const btn = "px-4 py-2 rounded-xl text-xs uppercase tracking-widest transition-colors duration-200";
 
   return (

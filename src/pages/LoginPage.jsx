@@ -26,13 +26,13 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f0e0d] flex flex-col items-center justify-center px-4 selection:bg-amber-100 selection:text-amber-900 relative overflow-hidden">
+        <div className="min-h-[100dvh] py-8 sm:py-0 bg-[#0f0e0d] flex flex-col items-center justify-center px-4 selection:bg-amber-100 selection:text-amber-900 relative overflow-x-hidden">
             
             {/* Subtle background glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-900/5 rounded-full blur-[120px] pointer-events-none"></div>
 
             {/* Logo / Marca */}
-            <div className="text-center mb-10 relative z-10">
+            <div className="text-center mb-6 sm:mb-10 relative z-10">
                 <p className="text-[10px] uppercase tracking-[0.6em] text-amber-700/80 mb-3 font-medium">
                     Cocina Mediterránea
                 </p>
@@ -43,7 +43,7 @@ const LoginPage = () => {
             </div>
 
             {/* Card del formulario */}
-            <div className="w-full max-w-sm bg-[#1c1a19] border border-white/5 rounded-3xl p-8 sm:p-10 flex flex-col gap-8 shadow-2xl shadow-black/40 relative z-10">
+            <div className="w-full max-w-sm bg-[#1c1a19] border border-white/5 rounded-3xl p-6 sm:p-10 flex flex-col gap-6 sm:gap-8 shadow-2xl shadow-black/40 relative z-10">
 
                 <div className="text-center">
                     <h2 className="font-display italic text-white/90 text-2xl leading-tight">
@@ -54,7 +54,7 @@ const LoginPage = () => {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
 
                     {/* Email */}
                     <div className="flex flex-col gap-2">
@@ -67,7 +67,7 @@ const LoginPage = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             placeholder="admin@laterraza.com"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 sm:py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
                         />
                     </div>
 
@@ -82,7 +82,7 @@ const LoginPage = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             placeholder="••••••••"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 sm:py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
                         />
                     </div>
 
@@ -99,7 +99,7 @@ const LoginPage = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="mt-2 w-full bg-amber-800 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-amber-50 rounded-2xl py-4 text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg shadow-amber-900/20 active:scale-[0.98]"
+                        className="mt-1 sm:mt-2 w-full bg-amber-800 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-amber-50 rounded-2xl py-3.5 sm:py-4 text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg shadow-amber-900/20 active:scale-[0.98]"
                     >
                         {loading ? 'Entrando...' : 'Iniciar Sesión'}
                     </button>
@@ -111,7 +111,7 @@ const LoginPage = () => {
             {/* Volver a la carta */}
             <button
                 onClick={() => navigate('/')}
-                className="mt-10 text-[10px] text-stone-600 hover:text-amber-700 uppercase tracking-[0.2em] transition-all relative z-10 flex items-center gap-2"
+                className="mt-6 sm:mt-10 text-[10px] text-stone-600 hover:text-amber-700 uppercase tracking-[0.2em] transition-all relative z-10 flex items-center gap-2"
             >
                 <span className="text-lg">←</span> Volver a la carta
             </button>
