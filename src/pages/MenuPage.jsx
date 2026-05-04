@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getPlates, getCategories, getConfig } from '../firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 const MenuPage = () => {
   const [plates, setPlates] = useState([]);
   const [categories, setCategories] = useState([]);
   const [config, setConfig] = useState({ name: 'La Terraza', subtitle: 'Cocina Mediterránea' });
   const [activeCategory, setActiveCategory] = useState('Todos');
+  const [clickCount, setClickCount] = useState(0);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const unsubPlates = getPlates(setPlates);
@@ -27,6 +32,29 @@ const MenuPage = () => {
     ? plates
     : plates.filter(p => p.category === activeCategory);
 
+  useEffect(() => {
+    if (clickCount === 0) return;
+    const timer = setTimeout(() => {
+      setClickCount(0);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [clickCount]);
+
+  const handleTitleClick = () => {
+    setClickCount(prev => {
+      const newCount = prev + 1;
+      if (newCount >= 5) {
+        if (user) {
+          navigate('/admin');
+        } else {
+          navigate('/login');
+        }
+        return 0;
+      }
+      return newCount;
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-4 pt-16 sm:pt-32 w-full bg-[#1a1714] selection:bg-amber-100 selection:text-amber-900">
 
@@ -42,7 +70,10 @@ const MenuPage = () => {
         </h2>
 
         <div className="relative">
-          <h1 className="text-5xl sm:text-7xl md:text-9xl font-display italic text-[#fdfaf6] leading-tight sm:leading-none drop-shadow-sm">
+          <h1 
+            onClick={handleTitleClick}
+            className="text-5xl sm:text-7xl md:text-9xl font-display italic text-[#fdfaf6] leading-tight sm:leading-none drop-shadow-sm cursor-default select-none"
+          >
             {config.name || 'La Terraza'}
           </h1>
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 sm:w-48 h-px bg-gradient-to-r from-transparent via-amber-700 to-transparent opacity-30"></div>
