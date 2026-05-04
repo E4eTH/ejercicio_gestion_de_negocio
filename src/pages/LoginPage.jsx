@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/config';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -56,35 +58,25 @@ const LoginPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
 
-                    {/* Email */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs uppercase tracking-widest text-stone-400">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            placeholder="admin@laterraza.com"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 sm:py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
-                        />
-                    </div>
+                    <Input
+                        label="Email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="admin@laterraza.com"
+                        className="bg-white/5"
+                    />
 
-                    {/* Contraseña */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs uppercase tracking-widest text-stone-400">
-                            Contraseña
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="••••••••"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 sm:py-3.5 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:border-amber-700/50 focus:bg-white/[0.07] transition-all"
-                        />
-                    </div>
+                    <Input
+                        label="Contraseña"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        placeholder="••••••••"
+                        className="bg-white/5"
+                    />
 
                     {/* Error */}
                     {error && (
@@ -95,14 +87,13 @@ const LoginPage = () => {
                         </div>
                     )}
 
-                    {/* Botón */}
-                    <button
+                    <Button
                         type="submit"
                         disabled={loading}
-                        className="mt-1 sm:mt-2 w-full bg-amber-800 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-amber-50 rounded-2xl py-3.5 sm:py-4 text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg shadow-amber-900/20 active:scale-[0.98]"
+                        className="w-full py-4"
                     >
                         {loading ? 'Entrando...' : 'Iniciar Sesión'}
-                    </button>
+                    </Button>
 
                 </form>
 
@@ -120,4 +111,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default LoginPage;
